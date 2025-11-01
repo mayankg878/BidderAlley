@@ -359,7 +359,11 @@ export default function AuctionDashboard() {
                           <div className="text-sm font-medium text-gray-900">{item.name}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{item.utility}</div>
+                          <div className="text-sm text-gray-900">
+                            {item.status === 'sold' ? item.utility : (
+                              <span className="text-gray-400 font-bold" title="Utility revealed after purchase">--</span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">${item.basePrice}M</div>
