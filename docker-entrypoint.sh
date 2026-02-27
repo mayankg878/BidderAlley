@@ -3,33 +3,23 @@ set -e
 
 echo "🚀 Starting Auction App..."
 
-# Create data directory and set permissions (run as root)
+# Ensure data directory exists
 mkdir -p /app/data
-chown -R nextjs:nodejs /app/data
 
-# Copy database to data directory if it doesn't exist
-if [ ! -f /app/data/dev.db ]; then
-    echo "📦 Initializing database..."
-    
-    # Set database path for Prisma
-    export DATABASE_URL="file:/app/data/dev.db"
-    
-    # Switch to nextjs user for database operations
-    su-exec nextjs sh << 'EOF'
-    export DATABASE_URL="file:/app/data/dev.db"
-    
-    # Push database schema
-    npx prisma db push --skip-generate
-    
-    # Run the existing seed file
-    npx tsx /app/prisma/seed.ts
-EOF
-    
-    echo "✅ Database initialized!"
-else
-    echo "✅ Database already exists"
-fi
+# Fix permissions properly (force)
+chmod -R 777 /app/data
 
-# Start the application as nextjs user
+# Set DATABASE_URL explicitly
+export DATABASE_URL="file:/app/data/dev.db"
+
+echo "📦 Syncing database schema..."
+
+# Run as nextjs user
+su-exec nextjs sh -c "
+export DATABASE_URL=file:/app/data/dev.db
+npx prisma db push --skip-generate
+npx tsx prisma/seed.ts || true
+"
+
 echo "🎯 Starting Next.js server..."
 exec su-exec nextjs "$@"
